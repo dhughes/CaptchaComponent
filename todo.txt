@@ -1,0 +1,11 @@
+make a simple logo
+
+create web pages
+
+create events for post - purchase of the captcha
+
+test purchasing of both versions
+
+create license text
+
+publish to staging (with exif too)
