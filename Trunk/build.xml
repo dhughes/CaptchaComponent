@@ -18,13 +18,13 @@
 			<arg line="export ${svnUrl}/Component%20Dev/captcha.cfc --force ${buildDirectory}/distribute/captcha.cfc --username ${SVNUSERNAME} --password ${SVNPASSWORD}"/> 
 		</exec>
 		<exec executable="svn"> 
-			<arg line="export ${svnUrl}/Distribute/Documentation/ --force ${buildDirectory}/distribute/Documentation --username ${SVNUSERNAME} --password ${SVNPASSWORD}"/> 
+			<arg line="export ${svnUrl}/distribute/Documentation/ --force ${buildDirectory}/distribute/Documentation --username ${SVNUSERNAME} --password ${SVNPASSWORD}"/> 
 		</exec>
 		<exec executable="svn"> 
-			<arg line="export ${svnUrl}/Distribute/Example --force ${buildDirectory}/distribute/Example --username ${SVNUSERNAME} --password ${SVNPASSWORD}"/> 
+			<arg line="export ${svnUrl}/distribute/Example --force ${buildDirectory}/distribute/Example --username ${SVNUSERNAME} --password ${SVNPASSWORD}"/> 
 		</exec>
 		<exec executable="svn"> 
-			<arg line="export ${svnUrl}/Distribute/captchalogo.gif --force ${buildDirectory}/distribute/captchalogo.gif --username ${SVNUSERNAME} --password ${SVNPASSWORD}"/> 
+			<arg line="export ${svnUrl}/distribute/captchalogo.gif --force ${buildDirectory}/distribute/captchalogo.gif --username ${SVNUSERNAME} --password ${SVNPASSWORD}"/> 
 		</exec>
 		
 		<!-- zip up the plugin -->
