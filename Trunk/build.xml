@@ -1,0 +1,35 @@
+<project name="Build Script" default="BuildPlugin">
+	
+	<target name="BuildPlugin">
+		<input message="Please enter SVN server username:" addproperty="SVNUSERNAME" />
+		<input message="Please enter SVN server password:" addproperty="SVNPASSWORD" />
+		
+		<property name="svnUrl" value="http://svn.alagad.com/CaptchaComponent/Trunk"/>
+		<property name="buildDirectory" value="build" />
+		
+		<!-- delete build files -->
+		<delete dir="${buildDirectory}/distribute" failonerror="true" />
+		
+		<!-- create the build dir -->
+		<mkdir dir="${buildDirectory}/distribute"/>
+		
+		<!-- export from svn -->
+		<exec executable="svn">
+			<arg line="export ${svnUrl}/Component%20Dev/captcha.cfc --force ${buildDirectory}/distribute/captcha.cfc --username ${SVNUSERNAME} --password ${SVNPASSWORD}"/> 
+		</exec>
+		<exec executable="svn"> 
+			<arg line="export ${svnUrl}/Distribute/Documentation/ --force ${buildDirectory}/distribute/Documentation --username ${SVNUSERNAME} --password ${SVNPASSWORD}"/> 
+		</exec>
+		<exec executable="svn"> 
+			<arg line="export ${svnUrl}/Distribute/Example --force ${buildDirectory}/distribute/Example --username ${SVNUSERNAME} --password ${SVNPASSWORD}"/> 
+		</exec>
+		<exec executable="svn"> 
+			<arg line="export ${svnUrl}/Distribute/captchalogo.gif --force ${buildDirectory}/distribute/captchalogo.gif --username ${SVNUSERNAME} --password ${SVNPASSWORD}"/> 
+		</exec>
+		
+		<!-- zip up the plugin -->
+		<zip destfile="${buildDirectory}/Captcha.zip"
+			basedir="${buildDirectory}/distribute" />	
+	</target>
+	
+</project>

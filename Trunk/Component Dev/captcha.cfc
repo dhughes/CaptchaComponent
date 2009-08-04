@@ -1,38 +1,6 @@
-<!------------------------------------------------------------------------------
-Source Code Copyright © 2004 Alagad, Inc. www.alagad.com
-
-  Application: Alagad Captcha Component 
-  Supported CF Version: CF MX 6.1, BlueDragon 6.1 JX (or better)
-  File Name: Captcha.cfc
-  CFC Component Name: Captcha
-  Created By: Doug Hughes (alagad@alagad.com)
-  Created Date: Before 02/11/2005
-  Description: I am a CFC which can be used to generate an image of an obfuscated string and a corresponding hash of the string.  Users of the component will be able to compare a user provided string with the hashed string.  If matched, then the developer can be reasonably sure that the user is a real person.
-
-Version History:
-  
- Created before 02/11/2005 by	D.Hughes
-  
-  mm/dd/yyyy	Author		Version		Comments
-  02/11/2005	D.Hughes	1.1			Added setAllowedFontList() method as well as some failsafes when determining what font to use.
-										Added setSpotsEnabled(), setContrast() and setInvert().
-  08/30/2006	D.Hughes	1.2			Added init method and made getDirectory public.  also allowed for relative or absolute paths.
-  
-Comments:
-
-  mm/dd/yyyy	Author		Comment
-  
-To Do:
-
-  mm/dd/yyyy	Comment
-  02/11/2005	Doucment setInvert().
-  
-------------------------------------------------------------------------------->
-
 <cfcomponent displayname="Captcha" hint="I am a CFC which can be used to generate an image of an obfuscated string and a corresponding hash of the string.  Users of the component will be able to compare a user provided string with the hashed string.  If matched, then the developer can be reasonably sure that the user is a real person." output="no">
 
 	<cfset variables.directory = "" />
-	<cfset variables.licensed = false />
 	<cfset variables.appText = "AlagadCaptcha*%Food!IsWhatyouMake(OF)it." />
 	<cfset variables.charString = "0123456789ABCDEFGHJKLMNPQRTUVWXY" />
 	<cfset variables.ignoredFontList = "" />
@@ -41,25 +9,22 @@ To Do:
 	<cfset variables.contrast = 0 />
 	<cfset variables.invert = false />
 	
-	<cffunction name="configure" access="public" hint="I configure the Captcha CFC.  The directory argument must be provided. The key is optional.  I return myself correctly configured." output="false" returntype="Captcha">
+	<cffunction name="configure" access="public" hint="I configure the Captcha CFC.  The directory argument must be provided. I return myself correctly configured." output="false" returntype="Captcha">
 		<cfargument name="directory" hint="I am the directory where captcha images will be written." required="yes" type="string" />
-		<cfargument name="key" hint="I am the key used to unlock the software.  This will prevent the image from drawing Alagad Captcha across the image." required="no" default="" />
 		
 		<cfif NOT DirectoryExists(arguments.directory)>
 			<cfset arguments.directory = ExpandPath(arguments.directory) />
 		</cfif>
 		
 		<cfset setDirectory(arguments.directory) />
-		<cfset setKey(arguments.key) />
 		
 		<cfreturn this />		
 	</cffunction>
 	
 	<cffunction name="init" access="public" hint="I am a convenience method which simply calls configure." output="false" returntype="Captcha">
 		<cfargument name="directory" hint="I am the directory where captcha images will be written." required="yes" type="string" />
-		<cfargument name="key" hint="I am the key used to unlock the software.  This will prevent the image from drawing Alagad Captcha across the image." required="no" default="" />
 		
-		<cfreturn configure(arguments.directory, arguments.key) />		
+		<cfreturn configure(arguments.directory) />		
 	</cffunction>
 
 	<cffunction name="createCaptcha" access="public" hint="I create a Captcha image.  I return a structure containing the hashed value of the string, the image name, and the string value." output="false" returntype="struct">
@@ -77,21 +42,13 @@ To Do:
 			<!--- it has not been provided, create a new name --->
 			<cfset arguments.fileName = CreateUUID() & ".jpg" />
 		</cfif>
-		
-		<!--- load the license if it exists in captchakey.txt --->
-		<cfset loadLicenseFile() />
-		
+			
 		<!--- check to see if the string has been provded --->
 		<cfif NOT Len(string)>
 			<!--- no string, create one --->
 			<cfset arguments.string = createRandomString() />
 		</cfif>
-		
-		<!--- if we are unlicensed then use the word "Unlicensed" --->
-		<cfif NOT isLicensed()>
-			<cfset arguments.string = "UNLICENSED" />
-		</cfif>
-		
+				
 		<!--- set the output filename into the results struct --->
 		<cfset results.fileName = arguments.fileName />
 		<!--- set the string being encoded into the results struct --->
@@ -138,22 +95,6 @@ To Do:
 		
 		<!--- return the results --->
 		<cfreturn results />
-	</cffunction>
-	
-	<!--- loadLicenseFile --->
-	<cffunction name="loadLicenseFile" access="private" output="false" returntype="void" hint="I check for the existance of (and contents of) captchakey.txt and load it as the license key, if it exists.">
-		<cfset var cfcKey = getDirectoryFromPath(getCurrentTemplatePath()) & "captchakey.txt" />
-		<cfset var key = "" />
-		
-		<!--- look for a file named captchakey.txt --->
-		<cfif FileExists(cfcKey)>
-			<!--- read the key file, if possible --->
-			<cffile action="read"
-				file="#cfcKey#"
-				variable="key" />
-			<!--- set the key (if not valid it won't be licensed) --->
-			<cfset setKey(trim(key)) />
-		</cfif>
 	</cffunction>
 	
 	<!--- createRandomString --->
@@ -718,51 +659,6 @@ To Do:
 		<cfreturn newString.init(arguments.string) />
 	</cffunction>
 	
-	<!--- key related --->
-	<cffunction name="validateKey" access="private" output="false" returntype="boolean">
-		<cfargument name="key" required="true" type="string" />
-		<cfargument name="appText" required="true" type="string" />
-		<cfset var initialChars = "" />
-		
-		<!--- fix the key (remove all hyphens) --->
-		<cfset arguments.key = Replace(arguments.key, "-", "", "all") />
-	
-		<!--- grab the first 9 chars --->
-		<cfset initialChars = Left(arguments.key, 9) />
-			
-		<!--- get a key and compare to our current key  --->
-		<cfreturn Replace(getKey(initialChars, arguments.appText), "-", "", "all") IS arguments.key />
-	</cffunction>
-
-	<cffunction name="getKey" access="private" output="false" returntype="string">
-		<cfargument name="initialChars" required="true" type="string" />
-		<cfargument name="appText" required="true" type="string" />
-		<cfset var md5String = "" />
-		<cfset var key = "" />
-		
-		<!--- get a hash of the string --->
-		<cfset md5String = hash(initialChars & arguments.appText) />
-		<cfset key = arguments.initialChars />
-		
-		<!--- 
-			Loop over the hash, grabing 2 chars on each look, convert them to base 10 and mod 32 the results.
-			This value is the character in the list of valid chars we will be using for this char in the resulting key.
-		--->
-		<cfloop from="1" to="32" index="i" step="2">
-			<cfset key = key & Mid(getCharString(), (InputBaseN(Mid(md5String, i, 2),16) Mod 32) + 1, 1) />
-		</cfloop>
-		
-		<cfif Len(key) IS 25>
-			<!--- add dashes --->
-			<cfset key = Insert("-", key, 20) />
-			<cfset key = Insert("-", key, 15) />
-			<cfset key = Insert("-", key, 10) />
-			<cfset key = Insert("-", key, 5) />
-		</cfif>
-		
-		<cfreturn key />
-	</cffunction>
-
 	<!--- getFileSepeartor --->
 	<cffunction name="getFileSeparator" access="private" output="false" returntype="string">
 		<cfset var fileObj = createObject("java", "java.io.File") />
@@ -794,18 +690,6 @@ To Do:
 	<cffunction name="isLicensed" access="private" output="false" returntype="boolean">
 		<cfreturn variables.licensed />
 	</cffunction>
-
-	<!--- key --->
-    <cffunction name="setKey" access="private" output="false" returntype="void">
-       <cfargument name="key" hint="I am the key used to unlock the software.  This will preven the image from drawing Alagad Captcha across the image." required="yes" type="string" />
-	   
-	   <!--- validate the key --->
-	   <cfif validateKey(arguments.key, getAppText())>
-	   	 <cfset variables.licensed = true />
-	   <cfelse>
-	     <cfset variables.licensed = false />
-	   </cfif>
-    </cffunction>
 	
 	<!--- appText --->
     <cffunction name="getAppText" access="private" output="false" returntype="string">
